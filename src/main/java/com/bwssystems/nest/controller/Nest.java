@@ -11,11 +11,14 @@ import org.slf4j.LoggerFactory;
 
 import com.bwssystems.nest.protocol.status.Device;
 import com.bwssystems.nest.protocol.status.DeviceDeserializer;
+import com.bwssystems.nest.protocol.status.DeviceDetail;
 import com.bwssystems.nest.protocol.status.NestStatus;
 import com.bwssystems.nest.protocol.status.Shared;
 import com.bwssystems.nest.protocol.status.SharedDeserializer;
+import com.bwssystems.nest.protocol.status.SharedDetail;
 import com.bwssystems.nest.protocol.status.Structure;
 import com.bwssystems.nest.protocol.status.StructureDeserializer;
+import com.bwssystems.nest.protocol.status.StructureDetail;
 import com.bwssystems.nest.protocol.status.Where;
 import com.bwssystems.nest.protocol.status.WhereDeserializer;
 import com.bwssystems.nest.protocol.status.WhereDetail;
@@ -23,82 +26,105 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Nest {
-	private Logger log = LoggerFactory.getLogger(Nest.class);
-	private NestSession theSession;
-	private NestStatus theStatus;
-	private Gson gson;
-	private Map<String, Thermostat> theThermostats;
-	private Map<String, Home> theHomes;
 	
+	private final Logger log = LoggerFactory.getLogger(Nest.class);
+	private final Gson gson;
+	
+	private NestSession session;
+	private NestStatus status;
+	
+	private final Map<String, Thermostat> mapThermostats;
+	private final Map<String, Home> mapHomes;
+
 	public Nest(NestSession aSession) {
 		super();
-		gson =
-                new GsonBuilder()
-                .registerTypeAdapter(Device.class, new DeviceDeserializer())
-                .registerTypeAdapter(Structure.class, new StructureDeserializer())
-                .registerTypeAdapter(Where.class, new WhereDeserializer())
-                .registerTypeAdapter(Shared.class, new SharedDeserializer())
-                .create();
-		theSession = aSession;
-		theThermostats = new HashMap<String, Thermostat>();
-		theHomes = new HashMap<String, Home>();
+		this.gson = new GsonBuilder()
+				.registerTypeAdapter(Device.class, new DeviceDeserializer())
+				.registerTypeAdapter(Structure.class,
+						new StructureDeserializer())
+				.registerTypeAdapter(Where.class, new WhereDeserializer())
+				.registerTypeAdapter(Shared.class, new SharedDeserializer())
+				.create();
+		this.session = aSession;
+		this.mapThermostats = new HashMap<String, Thermostat>();
+		this.mapHomes = new HashMap<String, Home>();
 		_getStatus();
 	}
-	
+
 	private void _getStatus() {
-		String theUrl = theSession.getTransport_url() + "/v2/mobile/user." + theSession.getUserid();
+		final String theUrl = session.getTransport_url() 
+								+ "/v2/mobile/user." + session.getUserid();
 		log.debug("getting status: " + theUrl);
-        HttpGet newRequest = new HttpGet(theUrl);
-        String response = theSession.execute(newRequest);
-        log.debug("status response: " + response);
-        theStatus = gson.fromJson(response, NestStatus.class);
-        for(String key : theStatus.getDevice().getDevices().keySet()) {
-        	if(theThermostats.get(key) == null)
-        		theThermostats.put(key, new Thermostat(theSession, key, theStatus.getDevice().getDevices().get(key), theStatus.getShared().getSharedDetails().get(key)));
-        	else
-        		theThermostats.get(key).reinitialize(theStatus.getDevice().getDevices().get(key), theStatus.getShared().getSharedDetails().get(key));
-        }
-        for(String key : theStatus.getStructure().getStructureDetails().keySet()) {
-        	if(theHomes.get(key) == null)
-        		theHomes.put(key, new Home(theSession, key, theStatus.getStructure().getStructureDetails().get(key)));
-        	else
-        		theHomes.get(key).reinitialize(theStatus.getStructure().getStructureDetails().get(key));
-        }
+		final HttpGet newRequest = new HttpGet(theUrl);
+		final String response = session.execute(newRequest);
+		log.debug("status response: " + response);
+		
+		status = gson.fromJson(response, NestStatus.class);
+		
+		final Map<String, DeviceDetail> 
+								devices = status.getDevice().getDevices();
+		for ( final String key : devices.keySet()) {
+			
+			final Map<String, SharedDetail> mapShared = 
+								status.getShared().getSharedDetails();
+			
+			if (mapThermostats.get(key) == null) {
+				
+				final Thermostat thermostat = new Thermostat(
+						session, key, devices.get(key), mapShared.get(key) );
+				
+				mapThermostats.put( key, thermostat );
+			} else
+				mapThermostats.get( key ).reinitialize( 
+								devices.get(key), mapShared.get(key));
+		}
+		for (String key : status.getStructure().getStructureDetails()
+				.keySet()) {
+			final StructureDetail detail = 
+						status.getStructure().getStructureDetails().get(key);
+			
+			if (mapHomes.get(key) == null) {
+				final Home home = new Home(session, key, detail);
+				mapHomes.put(key, home);
+			} else
+				mapHomes.get(key).reinitialize(detail);
+		}
 	}
 
 	public Thermostat getThermostat(String aName) {
-		if(theSession == null)
+		if (session == null)
 			return null;
 		_getStatus();
-		return theThermostats.get(aName);
+		return mapThermostats.get(aName);
 	}
-	
+
 	public Home getHome(String aName) {
-		if(theSession == null)
+		if (session == null)
 			return null;
 		_getStatus();
-		return theHomes.get(aName);
+		return mapHomes.get(aName);
 	}
-	
+
 	public Set<String> getThermostatNames() {
-		if(theSession == null)
+		if (session == null)
 			return null;
-		return theThermostats.keySet();
+		return mapThermostats.keySet();
 	}
 
 	public Set<String> getHomeNames() {
-		if(theSession == null)
+		if (session == null)
 			return null;
-		return theHomes.keySet();
+		return mapHomes.keySet();
 	}
-	
+
 	public WhereDetail getWhere(String aName) {
-		if(theSession == null)
+		if (session == null)
 			return null;
-		return theStatus.getWhere().getWheres().get(aName);
+		return status.getWhere().getWheres().get(aName);
 	}
+
 	public void endNestSession() {
-		theSession.close();
-		theSession = null;
+		session.close();
+		session = null;
 	}
 }

@@ -69,7 +69,23 @@ public class StructureDetail {
 //    @SerializedName("members")
 //    @Expose
 //    private List<JsonObject> members = new ArrayList<JsonObject>();
+    
 
+    private String strOriginalJSON = null;
+
+//    public StructureDetail( final String strOriginalJSON ) {
+//    	this.strOriginalJSON = strOriginalJSON;
+//    }
+    
+    public void setOriginalJSON( final String strOriginalJSON ) {
+    	this.strOriginalJSON = strOriginalJSON;
+    }
+
+    public String getOriginalJSON() {
+    	return this.strOriginalJSON;
+    }
+
+    
     /**
      * 
      * @return

@@ -20,6 +20,22 @@ public class WhereDetail {
     @Expose
     private List<WhereItem> wheres = new ArrayList<WhereItem>();
 
+    
+    private String strOriginalJSON = null;
+
+//    public WhereDetail( final String strOriginalJSON ) {
+//    	this.strOriginalJSON = strOriginalJSON;
+//    }
+    
+    public void setOriginalJSON( final String strOriginalJSON ) {
+    	this.strOriginalJSON = strOriginalJSON;
+    }
+
+    public String getOriginalJSON() {
+    	return this.strOriginalJSON;
+    }
+
+    
     /**
      * 
      * @return

@@ -537,7 +537,19 @@ public class DeviceDetail {
     @SerializedName("schedules")
     @Expose
     private List<JsonObject> schedules = new ArrayList<JsonObject>();
+    
+    
+    private final String strOriginalJSON;
 
+    public DeviceDetail( final String strOriginalJSON ) {
+    	this.strOriginalJSON = strOriginalJSON;
+    }
+    
+    public String getOriginalJSON() {
+    	return this.strOriginalJSON;
+    }
+    
+    
     /**
      * 
      * @return

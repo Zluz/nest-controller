@@ -29,21 +29,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NestSession {
-	private Logger log = LoggerFactory.getLogger(NestSession.class);
-	private String theUsername;
-	private String thePassword;
+	
+	final private Logger log = LoggerFactory.getLogger(NestSession.class);
+	final private String theUsername;
+	final private String thePassword;
+	final private SSLContext sslcontext;
+	final private SSLConnectionSocketFactory sslsf;
+	final private RequestConfig globalConfig;
+	public static final ContentType 
+				parsedContentType = ContentType.parse("application/json");
+	
+	private CloseableHttpClient httpclient;
 	private SessionAuthorization theAuth;
-    private SSLContext sslcontext;
-    private SSLConnectionSocketFactory sslsf;
-    private RequestConfig globalConfig;
-    private CloseableHttpClient httpclient;
-    public static final ContentType parsedContentType = ContentType.parse("application/json");
-    private BufferedReader theLine;
-    private String theBody;
-    private int retry;
-    private CloseableHttpResponse response;
+	private BufferedReader theLine;
+	private String theBody;
+	private int retry;
+	private CloseableHttpResponse response;
 
-    public NestSession(String username, String password) throws LoginException {
+	public NestSession(	final String username, 
+						final String password ) throws LoginException {
 		super();
 		theLine = null;
 		theBody = null;
@@ -52,43 +56,45 @@ public class NestSession {
 		thePassword = new String(password);
 		log.info("Starting Nest login...");
 		retry = 0;
-        // Trust own CA and all self-signed certs
-        sslcontext = SSLContexts.createDefault();
-        // Allow TLSv1 protocol only
-        sslsf = new SSLConnectionSocketFactory(
-                sslcontext,
-                new String[] { "TLSv1" },
-                null,
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-        globalConfig = RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.STANDARD)
-                .build();
-        
-        _login();
-	}
-	
-    private void _login() throws LoginException {
-        httpclient = HttpClients.custom()
-                .setSSLSocketFactory(sslsf)
-                .setDefaultRequestConfig(globalConfig)
-                .build();
+		// Trust own CA and all self-signed certs
+		sslcontext = SSLContexts.createDefault();
+		// Allow TLSv1 protocol only
+		sslsf = new SSLConnectionSocketFactory(sslcontext,
+				new String[] { "TLSv1" }, null,
+				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+		globalConfig = RequestConfig.custom()
+				.setCookieSpec(CookieSpecs.STANDARD).build();
 
-            HttpPost postRequest = new HttpPost("https://home.nest.com/user/login");
-            StringEntity requestBody = new StringEntity("{\"email\":\"" + theUsername + "\",\"password\":\"" + thePassword + "\"}", parsedContentType);
-            postRequest.setEntity(requestBody);
-            String authResponse = _execute(postRequest);
-            log.debug("_login Response: " + authResponse);
-            theAuth = new Gson().fromJson(authResponse, SessionAuthorization.class);
-            if(theAuth.getAccess_token() == null && theAuth.getUser() == null) {
-            	NestError anError = new Gson().fromJson(authResponse, NestError.class);
-            	String errormsg = "Login issue: " + anError.getError() + ", Description: " + anError.getErrorDescription();
-            	log.error(errormsg);
-            	throw new LoginException(errormsg);
-            }
-            else
-            	log.info("Completed Nest login...");
-    }
-    
+		_login();
+	}
+
+	private void _login() throws LoginException {
+		
+		httpclient = HttpClients.custom().setSSLSocketFactory(sslsf)
+				.setDefaultRequestConfig(globalConfig).build();
+
+		HttpPost postRequest = new HttpPost("https://home.nest.com/user/login");
+		
+		StringEntity requestBody = new StringEntity( 
+				"{\"email\":\"" + theUsername + "\","
+				+ "\"password\":\"" + thePassword + "\"}",
+				parsedContentType );
+		
+		postRequest.setEntity(requestBody);
+		String authResponse = _execute(postRequest);
+		log.debug("_login Response: " + authResponse);
+		theAuth = new Gson().fromJson(authResponse, SessionAuthorization.class);
+		if (theAuth.getAccess_token() == null && theAuth.getUser() == null) {
+			NestError anError = new Gson().fromJson(authResponse,
+					NestError.class);
+			String errormsg = "Login issue: " + anError.getError()
+					+ ", Description: " + anError.getErrorDescription();
+			log.error(errormsg);
+			throw new LoginException(errormsg);
+		} else
+			log.info("Completed Nest login...");
+	}
+
 	public void close() {
 		try {
 			this.httpclient.close();
@@ -98,56 +104,60 @@ public class NestSession {
 		this.httpclient = null;
 		this.theAuth = null;
 	}
-	
+
 	public String execute(HttpRequestBase aRequest) {
-        aRequest.setHeader("Authorization", "Basic " + theAuth.getAccess_token());
-        retry = 0;
-        return _execute(aRequest);
+		aRequest.setHeader("Authorization",
+				"Basic " + theAuth.getAccess_token());
+		retry = 0;
+		return _execute(aRequest);
 	}
-	
+
 	private String _execute(HttpRequestBase aRequest) {
 		try {
 			response = httpclient.execute(aRequest);
-            theLine = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            theBody = theLine.readLine();
-            EntityUtils.consume(response.getEntity());
-            response.close();
+			theLine = new BufferedReader(
+					new InputStreamReader(response.getEntity().getContent()));
+			theBody = theLine.readLine();
+			EntityUtils.consume(response.getEntity());
+			response.close();
 		} catch (ClientProtocolException e) {
 			log.warn("_execute Client Protocol failed: " + e.getMessage());
 			retry = 4;
 			theBody = null;
 		} catch (IOException e) {
-			log.warn("_execute IO failed, count number: " + retry + ", error message: " + e.getMessage());
+			log.warn("_execute IO failed, count number: " + retry
+					+ ", error message: " + e.getMessage());
 			close();
-			if(retry < 3) {
+			if (retry < 3) {
 				try {
-					if(retry > 0)
+					if (retry > 0)
 						Thread.sleep(3000);
 				} catch (InterruptedException e1) {
 					// noop
 				}
-				retry++;	
+				retry++;
 				try {
 					_login();
-			        aRequest.setHeader("Authorization", "Basic " + theAuth.getAccess_token());
+					aRequest.setHeader("Authorization",
+							"Basic " + theAuth.getAccess_token());
 					theBody = _execute(aRequest);
 				} catch (LoginException e1) {
-					log.warn("_execute retry login failed, count number: " + retry);
+					log.warn("_execute retry login failed, count number: "
+							+ retry);
 				}
-			}
-			else {
+			} else {
 				log.warn("Cannot execute http request, failed 3 times....");
 				retry = 4;
 				theBody = "Cannot execute http request, failed 3 times....";
 			}
 		}
-        return theBody;
+		return theBody;
 	}
-	
+
 	public String getTransport_url() {
 		return theAuth.getUrls().getTransport_url();
 	}
-	
+
 	public String getUserid() {
 		return theAuth.getUserid();
 	}

@@ -11,21 +11,38 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class DeviceDeserializer implements JsonDeserializer<Device> {
-	private Map<String, DeviceDetail> devices;
+	
     @Override
-    public Device deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx)
+    public Device deserialize(	final JsonElement json, 
+    							final Type typeOfT, 
+    							final JsonDeserializationContext ctx )
     {
-        JsonObject obj = json.getAsJsonObject();
+        final JsonObject obj = json.getAsJsonObject();
 
+    	final Map<String, DeviceDetail> devices;
         devices = new HashMap<String, DeviceDetail>();
-        for(Entry<String, JsonElement> entry:obj.entrySet()){
-            DeviceDetail newDevice = new DeviceDetail();
-            JsonObject theRawDetail = obj.getAsJsonObject(entry.getKey());
-            newDevice.setCurrentScheduleMode(theRawDetail.get("current_schedule_mode").getAsString());
-            newDevice.setFanMode(theRawDetail.get("fan_mode").getAsString());
-            if(theRawDetail.get("where_id") != null && !theRawDetail.get("where_id").isJsonNull())
-            	newDevice.setWhereId(theRawDetail.get("where_id").getAsString());
-            devices.put(entry.getKey(), newDevice);
+        
+        for( final Entry<String, JsonElement> entry:obj.entrySet() ){
+        	
+            final String strKey = entry.getKey();
+			final JsonObject jsonElement = obj.getAsJsonObject(strKey);
+
+			final String strJSON = jsonElement.toString();
+            final DeviceDetail device = new DeviceDetail( strJSON );
+
+            final String strCurrentScheduleMode = 
+            			jsonElement.get("current_schedule_mode").getAsString();
+			device.setCurrentScheduleMode( strCurrentScheduleMode );
+			
+            final String strFanMode = jsonElement.get("fan_mode").getAsString();
+			device.setFanMode( strFanMode );
+            
+            final JsonElement jsonWhereID = jsonElement.get("where_id");
+			if(	jsonWhereID != null && !jsonWhereID.isJsonNull() ) {
+            	device.setWhereId( jsonWhereID.getAsString() );
+			}
+			
+            devices.put( strKey, device );
         } 
         return new Device(devices);
     }

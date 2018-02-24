@@ -10,15 +10,16 @@ import org.slf4j.LoggerFactory;
 import com.bwssystems.nest.protocol.status.StructureDetail;
 
 public class Home {
-	private Logger log = LoggerFactory.getLogger(Nest.class);
-	private NestSession theSession;
-	private String theName;
-	private StructureDetail theDetail;
 	
+	private final Logger log = LoggerFactory.getLogger(Nest.class);
+	private final NestSession session;
+	private final String strName;
+	private StructureDetail theDetail;
+
 	public Home(NestSession aSession, String aName, StructureDetail aDetail) {
 		super();
-		theSession = aSession;
-		theName = aName;
+		session = aSession;
+		strName = aName;
 		theDetail = aDetail;
 	}
 
@@ -27,17 +28,22 @@ public class Home {
 	}
 
 	public void setAway(Boolean isAway) {
-		String theUrl = theSession.getTransport_url() + "/v2/put/structure." + theName;
-		HttpPost postRequest = new HttpPost(theUrl);
-        String requestString = "{\"away_timestamp\":" + Long.toString(new Date().getTime()) + ",\"away\":" + isAway.toString() + ",\"away_setter\":0}";
-		StringEntity requestBody = new StringEntity(requestString, NestSession.parsedContentType);
-		log.debug("setAway for home: " + theUrl + " with body: " + requestString);
-        postRequest.setEntity(requestBody);
+		final String theUrl = session.getTransport_url() 
+				+ "/v2/put/structure." + strName;
+		final HttpPost postRequest = new HttpPost(theUrl);
+		final String requestString = "{\"away_timestamp\":"
+				+ Long.toString(new Date().getTime()) + ",\"away\":"
+				+ isAway.toString() + ",\"away_setter\":0}";
+		final StringEntity requestBody = new StringEntity(requestString,
+				NestSession.parsedContentType);
+		log.debug( "setAway for home: " + theUrl 
+						+ " with body: " + requestString);
+		postRequest.setEntity(requestBody);
 
-        String theResponse = theSession.execute(postRequest);
-        log.debug("setAway post request response: " + theResponse);
+		final String theResponse = session.execute(postRequest);
+		log.debug("setAway post request response: " + theResponse);
 	}
-	
+
 	public StructureDetail getDetail() {
 		return theDetail;
 	}
@@ -47,6 +53,6 @@ public class Home {
 	}
 
 	public String getName() {
-		return theName;
+		return strName;
 	}
 }

@@ -12,18 +12,29 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class StructureDeserializer implements JsonDeserializer<Structure> {
-	private Map<String, StructureDetail> structureDetails;
-    @Override
-    public Structure deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx)
-    {
-        JsonObject obj = json.getAsJsonObject();
+	
 
-        structureDetails = new HashMap<String, StructureDetail>();
-        for(Entry<String, JsonElement> entry:obj.entrySet()){
-        	StructureDetail newObj = new Gson().fromJson(obj.getAsJsonObject(entry.getKey()),StructureDetail.class);
-            structureDetails.put(entry.getKey(), newObj);
-        } 
-        return new Structure(structureDetails);
-    }
+	@Override
+	public Structure deserialize(	final JsonElement json, 
+									final Type typeOfT,
+									final JsonDeserializationContext ctx ) {
+		final JsonObject obj = json.getAsJsonObject();
+
+		final Map<String, StructureDetail> mapStructureDetails;
+		mapStructureDetails = new HashMap<String, StructureDetail>();
+		
+		for (Entry<String, JsonElement> entry : obj.entrySet()) {
+			
+			final String strKey = entry.getKey();
+			
+			final StructureDetail element = new Gson().fromJson(
+					obj.getAsJsonObject(strKey), StructureDetail.class);
+
+			element.setOriginalJSON( element.toString() );
+
+			mapStructureDetails.put( strKey, element );
+		}
+		return new Structure( mapStructureDetails );
+	}
 
 }

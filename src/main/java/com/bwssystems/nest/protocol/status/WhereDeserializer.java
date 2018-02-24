@@ -12,18 +12,28 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class WhereDeserializer implements JsonDeserializer<Where> {
-	private Map<String, WhereDetail> whereDetails;
-    @Override
-    public Where deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx)
-    {
-        JsonObject obj = json.getAsJsonObject();
 
-        whereDetails = new HashMap<String, WhereDetail>();
-        for(Entry<String, JsonElement> entry:obj.entrySet()){
-        	WhereDetail newObj = new Gson().fromJson(obj.getAsJsonObject(entry.getKey()),WhereDetail.class);
-            whereDetails.put(entry.getKey(), newObj);
-        } 
-        return new Where(whereDetails);
-    }
+	@Override
+	public Where deserialize(	final JsonElement json, 
+								final Type typeOfT,
+								final JsonDeserializationContext ctx ) {
+		
+		final JsonObject obj = json.getAsJsonObject();
+
+		final Map<String, WhereDetail> mapWhereDetails;
+		mapWhereDetails = new HashMap<String, WhereDetail>();
+		
+		for ( final Entry<String, JsonElement> entry : obj.entrySet() ) {
+			final String strKey = entry.getKey();
+			
+			final JsonObject jsonObject = obj.getAsJsonObject(strKey);
+			final WhereDetail where = new Gson().fromJson(
+					jsonObject, WhereDetail.class );
+			where.setOriginalJSON( jsonObject.toString() );
+			
+			mapWhereDetails.put( strKey, where );
+		}
+		return new Where( mapWhereDetails );
+	}
 
 }

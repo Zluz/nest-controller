@@ -12,18 +12,30 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class SharedDeserializer implements JsonDeserializer<Shared> {
-	private Map<String, SharedDetail> sharedDetails;
-    @Override
-    public Shared deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx)
-    {
-        JsonObject obj = json.getAsJsonObject();
+	
+	@Override
+	public Shared deserialize(	final JsonElement jsonInput, 
+								final Type typeOfT,
+								final JsonDeserializationContext ctx ) {
 
-        sharedDetails = new HashMap<String, SharedDetail>();
-        for(Entry<String, JsonElement> entry:obj.entrySet()){
-        	SharedDetail newObj = new Gson().fromJson(obj.getAsJsonObject(entry.getKey()),SharedDetail.class);
-            sharedDetails.put(entry.getKey(), newObj);
-        } 
-        return new Shared(sharedDetails);
-    }
+		final JsonObject obj = jsonInput.getAsJsonObject();
+
+		final Map<String, SharedDetail> 
+					mapDetails = new HashMap<String, SharedDetail>();
+
+		for (Entry<String, JsonElement> entry : obj.entrySet()) {
+
+			final String strKey = entry.getKey();
+			final JsonObject jsonElement = obj.getAsJsonObject( strKey );
+			final String strJSON = jsonElement.toString();
+
+			final SharedDetail detail = 
+					new Gson().fromJson( jsonElement, SharedDetail.class );
+			detail.setOriginalJSON( strJSON );
+			
+			mapDetails.put( strKey, detail );
+		}
+		return new Shared(mapDetails);
+	}
 
 }

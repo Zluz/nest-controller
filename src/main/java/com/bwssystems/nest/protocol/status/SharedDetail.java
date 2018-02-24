@@ -83,7 +83,24 @@ public class SharedDetail {
     @SerializedName("target_temperature_type")
     @Expose
     private String targetTemperatureType;
+    
+    
+    private String strOriginalJSON = null;
 
+//    public SharedDetail( final String strOriginalJSON ) {
+//    	this.strOriginalJSON = strOriginalJSON;
+//    }
+    
+    public void setOriginalJSON( final String strOriginalJSON ) {
+    	this.strOriginalJSON = strOriginalJSON;
+    }
+
+    public String getOriginalJSON() {
+    	return this.strOriginalJSON;
+    }
+
+	
+	
     /**
      * 
      * @return
