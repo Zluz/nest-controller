@@ -3,10 +3,12 @@ package com.bwssystems.nest.test;
 import java.util.ListIterator;
 import java.util.Set;
 
+import com.bwssystems.nest.controller.FanMode;
 import com.bwssystems.nest.controller.Home;
 import com.bwssystems.nest.controller.Nest;
 import com.bwssystems.nest.controller.NestSession;
 import com.bwssystems.nest.controller.Thermostat;
+import com.bwssystems.nest.controller.ThermostatTargetType;
 import com.bwssystems.nest.protocol.error.LoginException;
 import com.bwssystems.nest.protocol.status.WhereDetail;
 import com.bwssystems.nest.protocol.status.WhereItem;
@@ -70,16 +72,16 @@ public class TestBridge {
 		System.out.println("Set Target Temp: " + targetTemp.toString());
 		System.out.println("----------------------------------------");
 		System.out.println("********************************************************");
-		String targetType = "range";
-		thermo1.setTargetType(targetType);
+//		String targetType = "range";
+		thermo1.setTargetType( ThermostatTargetType.RANGE );
 		System.out.println("----------------------------------------");
-		System.out.println("Set Target Type: " + targetType);
+		System.out.println("Set Target Type: " + ThermostatTargetType.RANGE.name() );
 		System.out.println("----------------------------------------");
 		System.out.println("********************************************************");
-		String fanmode = "auto"; /* on or auto */
-		thermo1.setFanMode(fanmode);
+//		String fanmode = "auto"; /* on or auto */
+		thermo1.setFanMode( FanMode.AUTO );
 		System.out.println("----------------------------------------");
-		System.out.println("Set Fan Mode: " + fanmode);
+		System.out.println("Set Fan Mode: " + FanMode.AUTO.name() );
 		System.out.println("----------------------------------------");
 		System.out.println("********************************************************");
 		System.out.println("----------------------------------------");
