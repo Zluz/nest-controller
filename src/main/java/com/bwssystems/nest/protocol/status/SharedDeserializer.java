@@ -28,10 +28,18 @@ public class SharedDeserializer implements JsonDeserializer<Shared> {
 			final String strKey = entry.getKey();
 			final JsonObject jsonElement = obj.getAsJsonObject( strKey );
 			final String strJSON = jsonElement.toString();
+			
+			final Map<String,String> map = new HashMap<>();
+			
+			for ( final Entry<String, JsonElement> 
+									property : jsonElement.entrySet() ) {
+				map.put( property.getKey(), property.getValue().toString() );
+			}
 
 			final SharedDetail detail = 
 					new Gson().fromJson( jsonElement, SharedDetail.class );
 			detail.setOriginalJSON( strJSON );
+			detail.setOriginalMap( map );
 			
 			mapDetails.put( strKey, detail );
 		}

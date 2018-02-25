@@ -52,14 +52,16 @@ public class Nest {
 	}
 
 	private void _getStatus() {
+		
 		final String theUrl = session.getTransport_url() 
 								+ "/v2/mobile/user." + session.getUserid();
+		
 		log.debug("getting status: " + theUrl);
 		final HttpGet newRequest = new HttpGet(theUrl);
 		final String response = session.execute(newRequest);
 		log.debug("status response: " + response);
 		
-		status = gson.fromJson(response, NestStatus.class);
+		status = gson.fromJson( response, NestStatus.class );
 		
 		final Map<String, DeviceDetail> 
 								devices = status.getDevice().getDevices();
@@ -68,7 +70,7 @@ public class Nest {
 			final Map<String, SharedDetail> mapShared = 
 								status.getShared().getSharedDetails();
 			
-			if (mapThermostats.get(key) == null) {
+			if ( null == mapThermostats.get(key) ) {
 				
 				final Thermostat thermostat = new Thermostat(
 						session, key, devices.get(key), mapShared.get(key) );
@@ -78,13 +80,13 @@ public class Nest {
 				mapThermostats.get( key ).reinitialize( 
 								devices.get(key), mapShared.get(key));
 		}
-		for (String key : status.getStructure().getStructureDetails()
-				.keySet()) {
-			final StructureDetail detail = 
-						status.getStructure().getStructureDetails().get(key);
+		final Map<String, StructureDetail> mapStructures = 
+								status.getStructure().getStructureDetails();
+		for (String key : mapStructures.keySet()) {
+			final StructureDetail detail = mapStructures.get(key);
 			
-			if (mapHomes.get(key) == null) {
-				final Home home = new Home(session, key, detail);
+			if ( null == mapHomes.get(key) ) {
+				final Home home = new Home( session, key, detail );
 				mapHomes.put(key, home);
 			} else
 				mapHomes.get(key).reinitialize(detail);

@@ -3,6 +3,7 @@ package com.bwssystems.nest.controller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 import javax.net.ssl.SSLContext;
 
@@ -31,8 +32,8 @@ import org.slf4j.LoggerFactory;
 public class NestSession {
 	
 	final private Logger log = LoggerFactory.getLogger(NestSession.class);
-	final private String theUsername;
-	final private String thePassword;
+	final private char[] theUsername;
+	final private char[] thePassword;
 	final private SSLContext sslcontext;
 	final private SSLConnectionSocketFactory sslsf;
 	final private RequestConfig globalConfig;
@@ -46,14 +47,14 @@ public class NestSession {
 	private int retry;
 	private CloseableHttpResponse response;
 
-	public NestSession(	final String username, 
-						final String password ) throws LoginException {
+	public NestSession(	final char[] username, 
+						final char[] password ) throws LoginException {
 		super();
 		theLine = null;
 		theBody = null;
 		response = null;
-		theUsername = new String(username);
-		thePassword = new String(password);
+		theUsername = Arrays.copyOf( username, username.length );
+		thePassword = Arrays.copyOf( password, password.length );
 		log.info("Starting Nest login...");
 		retry = 0;
 		// Trust own CA and all self-signed certs
@@ -76,8 +77,8 @@ public class NestSession {
 		HttpPost postRequest = new HttpPost("https://home.nest.com/user/login");
 		
 		StringEntity requestBody = new StringEntity( 
-				"{\"email\":\"" + theUsername + "\","
-				+ "\"password\":\"" + thePassword + "\"}",
+				"{\"email\":\"" + new String( theUsername ) + "\","
+				+ "\"password\":\"" + new String( thePassword ) + "\"}",
 				parsedContentType );
 		
 		postRequest.setEntity(requestBody);

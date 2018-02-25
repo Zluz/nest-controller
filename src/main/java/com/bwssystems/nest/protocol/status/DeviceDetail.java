@@ -2,7 +2,11 @@
 package com.bwssystems.nest.protocol.status;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Generated;
 
 import com.google.gson.JsonObject;
@@ -540,15 +544,29 @@ public class DeviceDetail {
     
     
     private final String strOriginalJSON;
+    
+    private final Map<String,String> mapOriginal = new HashMap<>();
+    
 
-    public DeviceDetail( final String strOriginalJSON ) {
+    public DeviceDetail(	final String strOriginalJSON,
+    						final Map<String,String> mapOriginal ) {
     	this.strOriginalJSON = strOriginalJSON;
+		this.mapOriginal.putAll( mapOriginal );
     }
     
     public String getOriginalJSON() {
     	return this.strOriginalJSON;
     }
-    
+
+//	public void setOriginalMap( final Map<String,String> map ) {
+//		this.mapOriginal.clear();
+//		this.mapOriginal.putAll( map );
+//	}
+	
+	public Map<String,String> getOriginalMap() {
+		return Collections.unmodifiableMap( this.mapOriginal );
+	}
+
     
     /**
      * 

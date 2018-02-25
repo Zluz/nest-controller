@@ -17,7 +17,8 @@ public class TestBridge {
 		System.out.println("Initialize Session and Nest");
 		NestSession theSession = null;
 		try {
-			theSession = new NestSession(args[0], args[1]);
+			theSession = new NestSession(	args[0].toCharArray(), 
+											args[1].toCharArray() );
 		} catch (LoginException e) {
 			System.out.println("Caught Login Exception, exiting....");
 			System.exit(1);

@@ -27,8 +27,16 @@ public class DeviceDeserializer implements JsonDeserializer<Device> {
             final String strKey = entry.getKey();
 			final JsonObject jsonElement = obj.getAsJsonObject(strKey);
 
+			final Map<String,String> map = new HashMap<>();
+			
+			for ( final Entry<String, JsonElement> 
+									property : jsonElement.entrySet() ) {
+				map.put( property.getKey(), property.getValue().toString() );
+			}
+
 			final String strJSON = jsonElement.toString();
-            final DeviceDetail device = new DeviceDetail( strJSON );
+            final DeviceDetail device = new DeviceDetail( strJSON, map );
+
 
             final String strCurrentScheduleMode = 
             			jsonElement.get("current_schedule_mode").getAsString();
@@ -44,7 +52,7 @@ public class DeviceDeserializer implements JsonDeserializer<Device> {
 			
             devices.put( strKey, device );
         } 
-        return new Device(devices);
+        return new Device( devices );
     }
 
 }

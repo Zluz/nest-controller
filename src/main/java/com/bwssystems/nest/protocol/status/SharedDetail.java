@@ -1,6 +1,10 @@
 
 package com.bwssystems.nest.protocol.status;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -86,6 +90,8 @@ public class SharedDetail {
     
     
     private String strOriginalJSON = null;
+    
+    private final Map<String,String> mapOriginal = new HashMap<>();
 
 //    public SharedDetail( final String strOriginalJSON ) {
 //    	this.strOriginalJSON = strOriginalJSON;
@@ -99,7 +105,15 @@ public class SharedDetail {
     	return this.strOriginalJSON;
     }
 
+	public void setOriginalMap( final Map<String,String> map ) {
+		this.mapOriginal.clear();
+		this.mapOriginal.putAll( map );
+	}
 	
+	public Map<String,String> getOriginalMap() {
+		return Collections.unmodifiableMap( this.mapOriginal );
+	}
+
 	
     /**
      * 
